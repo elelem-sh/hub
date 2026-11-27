@@ -45,11 +45,12 @@ RSpec.describe Elelem::Hub::Provider do
     expect(web.requests).to eq([["https://hub.test/v1/models", { token: "old-access" }]])
   end
 
-  it "asks you to pick when your nodes have several models" do
+  it "uses the first model when your nodes have several" do
     models.push("llama")
     sign_in
+    ask(provider)
 
-    expect { ask(provider) }.to raise_error(KeyError, "pick one: /provider hub MODEL (qwen, llama)")
+    expect(wire.posts.first).to include(model: "qwen")
   end
 
   it "refreshes the token the hub turned down, and asks again" do

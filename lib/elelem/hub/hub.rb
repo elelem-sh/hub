@@ -26,11 +26,9 @@ module Elelem
       def models(token) = web.get("#{url}/v1/models", token:).fetch("data", []).map { it["id"] }
 
       def pick(models)
-        return models.first if models.one?
-
         raise KeyError, "no models on your nodes yet" if models.empty?
 
-        raise KeyError, "pick one: /provider hub MODEL (#{models.join(", ")})"
+        models.first
       end
     end
   end

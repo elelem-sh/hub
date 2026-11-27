@@ -45,7 +45,14 @@ RSpec.describe Elelem::Hub::Account do
       expect(web.sent("https://hub.test/v1/models")).to be_empty
     end
 
-    it "says so when there is no one model to use" do
+    it "uses the first of several models and names the others" do
+      models.push("llama", "gemma")
+      account.login
+
+      expect(stream.string).to end_with("using qwen (also llama, gemma: /provider hub MODEL)\n")
+    end
+
+    it "says so when there are no models to use" do
       models.clear
       account.login
 

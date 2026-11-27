@@ -43,9 +43,9 @@ RSpec.describe Elelem::Hub::Hub do
     expect(web.requests).to eq([["https://hub.test/v1/models", { token: "access" }]])
   end
 
-  it "picks the only model, and says so when there is none or more than one" do
+  it "picks the first model, and says so when there is none" do
     expect(hub.pick(%w[a])).to eq("a")
+    expect(hub.pick(%w[a b])).to eq("a")
     expect { hub.pick([]) }.to raise_error(KeyError, "no models on your nodes yet")
-    expect { hub.pick(%w[a b]) }.to raise_error(KeyError, "pick one: /provider hub MODEL (a, b)")
   end
 end

@@ -41,10 +41,15 @@ module Elelem
       def provider = Provider.new(model:, hub: @hub, secrets: @secrets)
 
       def using(tokens)
-        ", using #{model || @hub.pick(@hub.models(tokens.access_token))}"
+        return ", using #{model}" if model
+
+        models = @hub.models(tokens.access_token)
+        ", using #{@hub.pick(models)}#{others(models.drop(1))}"
       rescue KeyError => e
         ": #{e.message}"
       end
+
+      def others(models) = models.empty? ? "" : " (also #{models.join(", ")}: /provider hub MODEL)"
 
       # RFC 7009 §2.1
       def revoke(saved)
