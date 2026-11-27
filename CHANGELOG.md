@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/elelem-sh/hub/compare/v0.1.0...v0.2.0) (2026-11-27)
+
+
+### Features
+
+* use the first model on your nodes and name the others ([2659363](https://github.com/elelem-sh/hub/commit/26593632be07fc800d1addee61322041b4f5c90f))
+
 ## [0.1.0](https://github.com/elelem-sh/hub/compare/v0.0.1...v0.1.0) (2026-11-27)
 
 
