@@ -8,7 +8,7 @@ class FakeWeb
   CODE = { "device_code" => "dc", "user_code" => "WXYZ", "verification_uri" => "https://id.test/activate",
            "verification_uri_complete" => "https://id.test/activate?user_code=WXYZ" }.freeze
 
-  attr_reader :requests
+  attr_reader :requests, :replies
 
   def self.signing_in(*grants, code: CODE, found: FOUND)
     new("https://hub.test/auth/device" => [DEVICE], "https://id.test/.well-known/openid-configuration" => [found],

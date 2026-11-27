@@ -7,19 +7,21 @@ module Elelem
         @hub = hub
         @secrets = secrets
         @clock = clock
+        @saved = true
       end
 
-      def call
-        renew
-        raise KeyError, "signed out of #{@hub.origin}: type /login" unless @tokens
-
-        @handed = @tokens.access_token
+      def call(spent: nil)
+        @spent = spent
+        renew unless @saved && usable?(@tokens)
+        @tokens&.access_token or raise KeyError, "signed out of #{@hub.origin}: type /login"
       end
 
       private
 
       def renew
+        @saved = false
         @secrets.update(@hub.name) { |saved| (@tokens = current(saved))&.to_json }
+        @saved = true
       rescue SystemCallError => e
         usable?(@tokens) ? Elelem.logger.warn("hub: could not save the sign-in: #{e.message}") : raise
       end
@@ -29,7 +31,7 @@ module Elelem
         usable?(newest) ? newest : refresh(newest)
       end
 
-      def usable?(tokens) = tokens&.fresh?(@clock.now) && tokens.access_token != @handed
+      def usable?(tokens) = tokens&.fresh?(@clock.now) && tokens.access_token != @spent
 
       # RFC 6749 §6
       def refresh(stale)

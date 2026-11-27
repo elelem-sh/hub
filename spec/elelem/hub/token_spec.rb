@@ -63,12 +63,27 @@ RSpec.describe Elelem::Hub::Token do
     expect(web.requests.size).to eq(1)
   end
 
-  it "takes a second call as proof the hub turned the first token down" do
-    grants.unshift(grants.first.merge("access_token" => "newer-access"))
+  it "hands out the token it holds without reading it again" do
     save(fresh)
     token = self.token
+    token.call
+    save(fresh.with(access_token: "other-access"))
 
-    expect([token.call, token.call, token.call]).to eq(%w[old-access newer-access new-access])
+    expect(token.call).to eq("old-access")
+  end
+
+  it "refreshes a fresh token the hub turned down" do
+    save(fresh)
+
+    expect(token.call(spent: "old-access")).to eq("new-access")
+    expect(saved.access_token).to eq("new-access")
+  end
+
+  it "takes the token another process refreshed in place of the one turned down" do
+    save(fresh.with(access_token: "other-access"))
+
+    expect(token.call(spent: "old-access")).to eq("other-access")
+    expect(web.requests).to be_empty
   end
 
   it "forgets the sign-in when the issuer no longer honours it" do
@@ -96,17 +111,16 @@ RSpec.describe Elelem::Hub::Token do
     expect(saved).to eq(stale)
   end
 
-  it "keeps a refreshed token it could not save, so the next refresh still has its rotated refresh token" do
-    grants.push(grants.first.merge("access_token" => "newer-access"))
+  it "keeps a refreshed token it could not save, and saves it at the next call" do
     save(stale)
     token = self.token(secrets: full_disk.new)
 
     expect(token.call).to eq("new-access")
     expect(saved).to eq(stale)
 
-    expect(token.call).to eq("newer-access")
-    expect(web.sent("https://id.test/token").map { it[:refresh_token] }).to eq(%w[old-refresh new-refresh])
-    expect(saved.access_token).to eq("newer-access")
+    expect(token.call).to eq("new-access")
+    expect(saved.refresh_token).to eq("new-refresh")
+    expect(web.requests.size).to eq(1)
   end
 
   it "fails when it cannot reach the saved sign-in at all" do
